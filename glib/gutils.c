@@ -254,6 +254,7 @@ g_memmove (gpointer      dest,
  *
  * Deprecated:2.32: It is best to avoid g_atexit().
  */
+#ifndef G_DISABLE_DEPRECATED
 void
 g_atexit (GVoidFunc func)
 {
@@ -288,6 +289,7 @@ g_atexit (GVoidFunc func)
   if (error)
     g_error ("Could not register atexit() function: %s", error);
 }
+#endif
 
 /* Based on execvp() from GNU Libc.
  * Some of this code is cut-and-pasted into gspawn.c

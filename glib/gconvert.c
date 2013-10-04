@@ -23,8 +23,10 @@
 #include "config.h"
 #include "glibconfig.h"
 
+#ifndef __BIONIC__
 #ifndef G_OS_WIN32
 #include <iconv.h>
+#endif
 #endif
 #include <errno.h>
 #include <stdio.h>
@@ -200,6 +202,7 @@ g_convert_error_quark (void)
   return g_quark_from_static_string ("g_convert_error");
 }
 
+#ifndef __BIONIC__
 static gboolean
 try_conversion (const char *to_codeset,
 		const char *from_codeset,
@@ -232,6 +235,7 @@ try_to_aliases (const char **to_aliases,
 
   return FALSE;
 }
+#endif
 
 G_GNUC_INTERNAL extern const char ** 
 _g_charset_get_aliases (const char *canonical_name);
@@ -255,6 +259,7 @@ GIConv
 g_iconv_open (const gchar  *to_codeset,
 	      const gchar  *from_codeset)
 {
+#ifndef __BIONIC__
   iconv_t cd;
   
   if (!try_conversion (to_codeset, from_codeset, &cd))
@@ -283,6 +288,9 @@ g_iconv_open (const gchar  *to_codeset,
 
  out:
   return (cd == (iconv_t)-1) ? (GIConv)-1 : (GIConv)cd;
+#else
+  return (GIConv)-1;
+#endif
 }
 
 /**
@@ -309,9 +317,13 @@ g_iconv (GIConv   converter,
 	 gchar  **outbuf,
 	 gsize   *outbytes_left)
 {
+#ifndef __BIONIC__
   iconv_t cd = (iconv_t)converter;
 
   return iconv (cd, inbuf, inbytes_left, outbuf, outbytes_left);
+#else
+  return -1;
+#endif
 }
 
 /**
@@ -332,13 +344,18 @@ g_iconv (GIConv   converter,
 gint
 g_iconv_close (GIConv converter)
 {
+#ifndef __BIONIC__
   iconv_t cd = (iconv_t)converter;
 
   return iconv_close (cd);
+#else
+  return -1;
+#endif
 }
 
 
 #ifdef NEED_ICONV_CACHE
+#ifndef __BIONIC__
 
 #define ICONV_CACHE_SIZE   (16)
 
@@ -625,6 +642,7 @@ close_converter (GIConv converter)
   return 0;
 }
 
+#endif
 #else  /* !NEED_ICONV_CACHE */
 
 static GIConv

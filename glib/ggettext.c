@@ -40,7 +40,9 @@
 
 #include <string.h>
 #include <locale.h>
+#ifndef __BIONIC__
 #include <libintl.h>
+#endif
 
 #ifdef G_OS_WIN32
 
@@ -104,7 +106,9 @@ ensure_gettext_initialized (void)
       bindtextdomain (GETTEXT_PACKAGE, tmp);
       g_free (tmp);
 #else
+#ifndef __BIONIC__
       bindtextdomain (GETTEXT_PACKAGE, GLIB_LOCALE_DIR);
+#endif
 #endif
 #    ifdef HAVE_BIND_TEXTDOMAIN_CODESET
       bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -302,6 +306,7 @@ g_dpgettext2 (const gchar *domain,
 static gboolean
 _g_dgettext_should_translate (void)
 {
+#ifndef __BIONIC__
   static gsize translate = 0;
   enum {
     SHOULD_TRANSLATE = 1,
@@ -346,6 +351,9 @@ _g_dgettext_should_translate (void)
     }
 
   return translate == SHOULD_TRANSLATE;
+#else
+  return FALSE;
+#endif
 }
 
 /**
@@ -396,7 +404,11 @@ g_dgettext (const gchar *domain,
   if (domain && G_UNLIKELY (!_g_dgettext_should_translate ()))
     return msgid;
 
+#ifndef __BIONIC__
   return dgettext (domain, msgid);
+#else
+  return msgid;
+#endif
 }
 
 /**
@@ -423,7 +435,11 @@ g_dcgettext (const gchar *domain,
   if (domain && G_UNLIKELY (!_g_dgettext_should_translate ()))
     return msgid;
 
+#ifndef __BIONIC__
   return dcgettext (domain, msgid, category);
+#else
+  return msgid;
+#endif
 }
 
 /**
@@ -454,7 +470,11 @@ g_dngettext (const gchar *domain,
   if (domain && G_UNLIKELY (!_g_dgettext_should_translate ()))
     return n == 1 ? msgid : msgid_plural;
 
+#ifndef __BIONIC__
   return dngettext (domain, msgid, msgid_plural, n);
+#else
+  return msgid;
+#endif
 }
 
 

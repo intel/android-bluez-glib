@@ -73,6 +73,10 @@
 #include "gstrfuncs.h"
 #include "gstring.h"
 
+#ifdef __BIONIC__
+#include <android/log.h>
+#endif
+
 #ifdef G_OS_WIN32
 #include <process.h>		/* For getpid() */
 #include <io.h>
@@ -872,6 +876,7 @@ strdup_convert (const gchar *string,
     }
   else
     {
+#ifndef __BIONIC__
       GError *err = NULL;
       
       gchar *result = g_convert_with_fallback (string, -1, charset, "UTF-8", "?", NULL, NULL, &err);
@@ -891,6 +896,9 @@ strdup_convert (const gchar *string,
 	  
 	  return g_strdup (string);
 	}
+#else
+	return g_strdup (string);
+#endif
     }
 }
 
@@ -1194,6 +1202,7 @@ g_log_default_handler (const gchar   *log_domain,
     return;
 
  emit:
+#ifndef __BIONIC__
   /* we can be called externally with recursion for whatever reason */
   if (log_level & G_LOG_FLAG_RECURSION)
     {
@@ -1254,6 +1263,9 @@ g_log_default_handler (const gchar   *log_domain,
 
   write_string (fd, string);
   g_free (string);
+#else
+  __android_log_write(ANDROID_LOG_WARN, log_domain, message);
+#endif
 }
 
 /**
